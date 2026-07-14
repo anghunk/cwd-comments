@@ -1,0 +1,446 @@
+{
+  "推特": {
+    "type": "image",
+    "name": "twemoji",
+    "container": [
+      {
+        "icon": "angry",
+        "text": "生气",
+        "url": "https://cwd.js.org/emotion/twemoji/angry.png"
+      },
+      {
+        "icon": "bigsmile",
+        "text": "红脸笑",
+        "url": "https://cwd.js.org/emotion/twemoji/bigsmile.png"
+      },
+      {
+        "icon": "congratulate",
+        "text": "祝贺",
+        "url": "https://cwd.js.org/emotion/twemoji/congratulate.png"
+      },
+      {
+        "icon": "cool",
+        "text": "炫酷",
+        "url": "https://cwd.js.org/emotion/twemoji/cool.png"
+      },
+      {
+        "icon": "cry",
+        "text": "哭泣",
+        "url": "https://cwd.js.org/emotion/twemoji/cry.png"
+      },
+      {
+        "icon": "dtongue",
+        "text": "吐舌",
+        "url": "https://cwd.js.org/emotion/twemoji/dtongue.png"
+      },
+      {
+        "icon": "family",
+        "text": "家庭",
+        "url": "https://cwd.js.org/emotion/twemoji/family.png"
+      },
+      {
+        "icon": "frightened",
+        "text": "惊恐",
+        "url": "https://cwd.js.org/emotion/twemoji/frightened.png"
+      },
+      {
+        "icon": "gift",
+        "text": "礼物",
+        "url": "https://cwd.js.org/emotion/twemoji/gift.png"
+      },
+      {
+        "icon": "happy",
+        "text": "开心",
+        "url": "https://cwd.js.org/emotion/twemoji/happy.png"
+      },
+      {
+        "icon": "kiss",
+        "text": "亲亲",
+        "url": "https://cwd.js.org/emotion/twemoji/kiss.png"
+      },
+      {
+        "icon": "love",
+        "text": "喜欢",
+        "url": "https://cwd.js.org/emotion/twemoji/love.png"
+      },
+      {
+        "icon": "notalk",
+        "text": "不说话",
+        "url": "https://cwd.js.org/emotion/twemoji/notalk.png"
+      },
+      {
+        "icon": "ok",
+        "text": "可以",
+        "url": "https://cwd.js.org/emotion/twemoji/ok.png"
+      },
+      {
+        "icon": "prayer",
+        "text": "祈祷",
+        "url": "https://cwd.js.org/emotion/twemoji/prayer.png"
+      },
+      {
+        "icon": "proud",
+        "text": "得意",
+        "url": "https://cwd.js.org/emotion/twemoji/proud.png"
+      },
+      {
+        "icon": "shy",
+        "text": "害羞",
+        "url": "https://cwd.js.org/emotion/twemoji/shy.png"
+      },
+      {
+        "icon": "smile",
+        "text": "微笑",
+        "url": "https://cwd.js.org/emotion/twemoji/smile.png"
+      },
+      {
+        "icon": "smilecry",
+        "text": "笑哭",
+        "url": "https://cwd.js.org/emotion/twemoji/smilecry.png"
+      },
+      {
+        "icon": "star",
+        "text": "星星",
+        "url": "https://cwd.js.org/emotion/twemoji/star.png"
+      },
+      {
+        "icon": "sweat",
+        "text": "流汗",
+        "url": "https://cwd.js.org/emotion/twemoji/sweat.png"
+      },
+      {
+        "icon": "tiaomei",
+        "text": "挑眉",
+        "url": "https://cwd.js.org/emotion/twemoji/tiaomei.png"
+      },
+      {
+        "icon": "tilted",
+        "text": "歪头",
+        "url": "https://cwd.js.org/emotion/twemoji/tilted.png"
+      },
+      {
+        "icon": "tongue",
+        "text": "吐舌",
+        "url": "https://cwd.js.org/emotion/twemoji/tongue.png"
+      },
+      {
+        "icon": "uncomfort",
+        "text": "难受",
+        "url": "https://cwd.js.org/emotion/twemoji/uncomfort.png"
+      }
+    ]
+  },
+  "阿鲁": {
+    "type": "image",
+    "name": "aru",
+    "container": [
+      {
+        "icon": "angry",
+        "text": "生气",
+        "url": "https://cwd.js.org/emotion/aru/angry.png"
+      },
+      {
+        "icon": "bigeye",
+        "text": "大眼睛",
+        "url": "https://cwd.js.org/emotion/aru/bigeye.png"
+      },
+      {
+        "icon": "blood",
+        "text": "一滩血",
+        "url": "https://cwd.js.org/emotion/aru/blood.png"
+      },
+      {
+        "icon": "blood2",
+        "text": "吐血",
+        "url": "https://cwd.js.org/emotion/aru/blood2.png"
+      },
+      {
+        "icon": "cheer",
+        "text": "欢呼",
+        "url": "https://cwd.js.org/emotion/aru/cheer.png"
+      },
+      {
+        "icon": "clap",
+        "text": "拍掌",
+        "url": "https://cwd.js.org/emotion/aru/clap.png"
+      },
+      {
+        "icon": "confuse",
+        "text": "迷惑",
+        "url": "https://cwd.js.org/emotion/aru/confuse.png"
+      },
+      {
+        "icon": "crying",
+        "text": "流泪",
+        "url": "https://cwd.js.org/emotion/aru/crying.png"
+      },
+      {
+        "icon": "cryingface",
+        "text": "掩面哭泣",
+        "url": "https://cwd.js.org/emotion/aru/cryingface.png"
+      },
+      {
+        "icon": "dead",
+        "text": "死翘翘",
+        "url": "https://cwd.js.org/emotion/aru/dead.png"
+      },
+      {
+        "icon": "despise",
+        "text": "鄙视",
+        "url": "https://cwd.js.org/emotion/aru/despise.png"
+      },
+      {
+        "icon": "discovertruth",
+        "text": "发现真相",
+        "url": "https://cwd.js.org/emotion/aru/discovertruth.png"
+      },
+      {
+        "icon": "distressed",
+        "text": "烦恼",
+        "url": "https://cwd.js.org/emotion/aru/distressed.png"
+      },
+      {
+        "icon": "diving",
+        "text": "潜水",
+        "url": "https://cwd.js.org/emotion/aru/diving.png"
+      },
+      {
+        "icon": "envious",
+        "text": "眼馋",
+        "url": "https://cwd.js.org/emotion/aru/envious.png"
+      },
+      {
+        "icon": "flower",
+        "text": "小花花",
+        "url": "https://cwd.js.org/emotion/aru/flower.png"
+      },
+      {
+        "icon": "frown",
+        "text": "皱眉",
+        "url": "https://cwd.js.org/emotion/aru/frown.png"
+      },
+      {
+        "icon": "insidious",
+        "text": "阴险",
+        "url": "https://cwd.js.org/emotion/aru/insidious.png"
+      },
+      {
+        "icon": "knife",
+        "text": "插刀",
+        "url": "https://cwd.js.org/emotion/aru/knife.png"
+      },
+      {
+        "icon": "lurking",
+        "text": "潜伏",
+        "url": "https://cwd.js.org/emotion/aru/lurking.png"
+      },
+      {
+        "icon": "meditation",
+        "text": "沉思",
+        "url": "https://cwd.js.org/emotion/aru/meditation.png"
+      },
+      {
+        "icon": "nomatter",
+        "text": "无所谓",
+        "url": "https://cwd.js.org/emotion/aru/nomatter.png"
+      },
+      {
+        "icon": "nose",
+        "text": "抠鼻",
+        "url": "https://cwd.js.org/emotion/aru/nose.png"
+      },
+      {
+        "icon": "pouting",
+        "text": "亲嘴",
+        "url": "https://cwd.js.org/emotion/aru/pouting.png"
+      },
+      {
+        "icon": "proud",
+        "text": "得意",
+        "url": "https://cwd.js.org/emotion/aru/proud.png"
+      },
+      {
+        "icon": "shit",
+        "text": "便便",
+        "url": "https://cwd.js.org/emotion/aru/shit.png"
+      },
+      {
+        "icon": "shutup",
+        "text": "闭嘴",
+        "url": "https://cwd.js.org/emotion/aru/shutup.png"
+      },
+      {
+        "icon": "shy",
+        "text": "捂脸",
+        "url": "https://cwd.js.org/emotion/aru/shy.png"
+      },
+      {
+        "icon": "shy2",
+        "text": "脸红",
+        "url": "https://cwd.js.org/emotion/aru/shy2.png"
+      },
+      {
+        "icon": "smile",
+        "text": "微笑",
+        "url": "https://cwd.js.org/emotion/aru/smile.png"
+      },
+      {
+        "icon": "speechless",
+        "text": "无语",
+        "url": "https://cwd.js.org/emotion/aru/speechless.png"
+      },
+      {
+        "icon": "spit",
+        "text": "吐",
+        "url": "https://cwd.js.org/emotion/aru/spit.png"
+      },
+      {
+        "icon": "surprised",
+        "text": "吃惊",
+        "url": "https://cwd.js.org/emotion/aru/surprised.png"
+      },
+      {
+        "icon": "surrender",
+        "text": "投降",
+        "url": "https://cwd.js.org/emotion/aru/surrender.png"
+      },
+      {
+        "icon": "sweat",
+        "text": "流汗",
+        "url": "https://cwd.js.org/emotion/aru/sweat.png"
+      },
+      {
+        "icon": "thumb",
+        "text": "大拇指",
+        "url": "https://cwd.js.org/emotion/aru/thumb.png"
+      },
+      {
+        "icon": "tongue",
+        "text": "吐舌",
+        "url": "https://cwd.js.org/emotion/aru/tongue.png"
+      },
+      {
+        "icon": "unhappy",
+        "text": "不开心",
+        "url": "https://cwd.js.org/emotion/aru/unhappy.png"
+      }
+    ]
+  },
+  "颜文字": {
+    "type": "emoticon",
+    "container": [
+      {
+        "icon": "OωO",
+        "text": "Author: DIYgod"
+      },
+      {
+        "icon": "|´・ω・)ノ",
+        "text": "Hi"
+      },
+      {
+        "icon": "ヾ(≧∇≦*)ゝ",
+        "text": "开心"
+      },
+      {
+        "icon": "(☆ω☆)",
+        "text": "星星眼"
+      },
+      {
+        "icon": "（╯‵□′）╯︵┴─┴",
+        "text": "掀桌"
+      },
+      {
+        "icon": "￣﹃￣",
+        "text": "流口水"
+      },
+      {
+        "icon": "(/ω＼)",
+        "text": "捂脸"
+      },
+      {
+        "icon": "∠( ᐛ 」∠)＿",
+        "text": "给跪"
+      },
+      {
+        "icon": "(๑•̀ㅁ•́ฅ)",
+        "text": "Hi"
+      },
+      {
+        "icon": "→_→",
+        "text": "斜眼"
+      },
+      {
+        "icon": "୧(๑•̀⌄•́๑)૭",
+        "text": "加油"
+      },
+      {
+        "icon": "٩(ˊᗜˋ*)و",
+        "text": "有木有WiFi"
+      },
+      {
+        "icon": "(ノ°ο°)ノ",
+        "text": "前方高能预警"
+      },
+      {
+        "icon": "(´இ皿இ｀)",
+        "text": "我从未见过如此厚颜无耻之人"
+      },
+      {
+        "icon": "⌇●﹏●⌇",
+        "text": "吓死宝宝惹"
+      },
+      {
+        "icon": "(ฅ´ω`ฅ)",
+        "text": "已阅留爪"
+      },
+      {
+        "icon": "(╯°A°)╯︵○○○",
+        "text": "去吧大师球"
+      },
+      {
+        "icon": "φ(￣∇￣o)",
+        "text": "太萌惹"
+      },
+      {
+        "icon": "ヾ(´･ ･｀｡)ノ\"",
+        "text": "咦咦咦"
+      },
+      {
+        "icon": "( ง ᵒ̌皿ᵒ̌)ง⁼³₌₃",
+        "text": "气呼呼"
+      },
+      {
+        "icon": "(ó﹏ò｡)",
+        "text": "我受到了惊吓"
+      },
+      {
+        "icon": "Σ(っ °Д °;)っ",
+        "text": "什么鬼"
+      },
+      {
+        "icon": "( ,,´･ω･)ﾉ\"(´っω･｀｡)",
+        "text": "摸摸头"
+      },
+      {
+        "icon": "╮(╯▽╰)╭ ",
+        "text": "无奈"
+      },
+      {
+        "icon": "o(*////▽////*)q ",
+        "text": "脸红"
+      },
+      {
+        "icon": "＞﹏＜",
+        "text": ""
+      },
+      {
+        "icon": "( ๑´•ω•) \"(ㆆᴗㆆ)",
+        "text": ""
+      },
+      {
+        "icon": "(｡•ˇ‸ˇ•｡)",
+        "text": ""
+      }
+    ]
+  }
+}
