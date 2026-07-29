@@ -1,8 +1,8 @@
 import { Context } from 'hono';
 import { Bindings } from '../../bindings';
 import { checkContent } from '../public/postComment';
-import { marked } from 'marked';
 import xss from 'xss';
+import { parseMarkdown } from '../../utils/markdown';
 
 export const updateComment = async (c: Context<{ Bindings: Bindings }>) => {
   let body: any;
@@ -112,7 +112,7 @@ export const updateComment = async (c: Context<{ Bindings: Bindings }>) => {
     return c.json({ message: '评论内容不能为空' }, 400);
   }
 
-  const html = await marked.parse(cleanedContent, { async: true });
+  const html = await parseMarkdown(cleanedContent);
   const contentHtml = xss(html, {
     whiteList: {
       ...xss.whiteList,
@@ -138,4 +138,3 @@ export const updateComment = async (c: Context<{ Bindings: Bindings }>) => {
     message: `Comment updated, id: ${id}.`
   });
 };
-
