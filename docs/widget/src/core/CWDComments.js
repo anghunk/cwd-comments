@@ -395,8 +395,9 @@ export class CWDComments {
 			header = document.createElement('div');
 			header.className = 'cwd-comments-header';
 			const showArticleLike = this.config.enableArticleLike !== false;
+			header.style.display = showArticleLike ? '' : 'none';
 			header.innerHTML = `
-				<div class="cwd-like" ${showArticleLike ? '' : 'style="display: none;"'}>
+				<div class="cwd-like">
           <button type="button" class="cwd-like-button" data-liked="false">
             <span class="cwd-like-icon-wrapper">
               <svg class="cwd-like-icon" viewBox="0 0 24 24" aria-hidden="true">
