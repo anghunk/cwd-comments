@@ -156,7 +156,8 @@ POST /api/comments
   "url": "https://zhangsan.me",
   "content": "很棒的文章！",
   "parent_id": 1,
-  "adminToken": "your-admin-key"
+  "adminToken": "your-admin-key",
+  "turnstileToken": "turnstile-response-token"
 }
 ```
 
@@ -173,6 +174,7 @@ POST /api/comments
 | `content`    | string | 是   | 评论内容，内部会过滤 `<script>...</script>` 片段                     |
 | `parent_id`  | number | 否   | 父评论 ID，用于回复功能；缺省或 `null` 表示根评论                    |
 | `adminToken` | string | 否   | 管理员评论密钥，博主发布评论时需要先通过 `/api/verify-admin` 验证密钥后将密钥传入此字段，评论将直接通过且不受审核设置影响 |
+| `turnstileToken` | string | 启用 Turnstile 时是 | Cloudflare Turnstile 返回的一次性验证 token |
 
 **请求头说明：**
 
@@ -203,6 +205,29 @@ POST /api/comments
 ```
 
 **错误响应**
+
+- 同一 IP 在 10 秒内重复评论：
+
+  - 状态码：`429`
+
+  ```json
+  {
+    "message": "评论频繁，等10s后再试",
+    "turnstileConsumed": false
+  }
+  ```
+
+  `turnstileConsumed` 为 `false` 表示请求在调用 Siteverify 前已被拒绝，前端可以保留尚未消费的验证码 token。
+
+- Turnstile 验证失败或缺少 token：
+
+  - 状态码：`403`
+
+  ```json
+  {
+    "message": "请完成人机验证后再提交评论"
+  }
+  ```
 
 - 请求体缺失或字段类型错误：
 

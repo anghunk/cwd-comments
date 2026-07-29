@@ -76,6 +76,11 @@ export interface CWDCommentsConfig {
    * Custom OwO emotion JSON for the emotion picker. Empty values hide the emotion button.
    */
   emotionJson?: string | Record<string, unknown>;
+
+  /**
+   * Cloudflare Turnstile site key. Normally loaded from the CWD API.
+   */
+  turnstileSiteKey?: string;
 }
 
 export class CWDComments {

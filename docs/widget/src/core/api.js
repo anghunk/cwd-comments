@@ -87,18 +87,23 @@ export function createApiClient(config) {
 				content: data.content,
 				parent_id: data.parentId,
 				adminToken: data.adminToken,
+				turnstileToken: data.turnstileToken,
 				site_id: config.siteId
 			}),
 		});
 
 		if (!response.ok) {
-            // Try to parse error message
-            let msg = response.statusText;
-            try {
-                const json = await response.json();
-                if (json.message) msg = json.message;
-            } catch (e) {}
-			throw new Error(msg);
+			let msg = response.statusText;
+			let turnstileConsumed = true;
+			try {
+				const json = await response.json();
+				if (json.message) msg = json.message;
+				turnstileConsumed = json.turnstileConsumed !== false;
+			} catch (e) {}
+			const error = new Error(msg);
+			error.status = response.status;
+			error.turnstileConsumed = turnstileConsumed;
+			throw error;
 		}
 		return response.json();
 	}

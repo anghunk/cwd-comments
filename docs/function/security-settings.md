@@ -1,5 +1,9 @@
 # 安全设置
 
+### Cloudflare Turnstile
+
+配置 `TURNSTILE_SITE_KEY` 和 `TURNSTILE_SECRET_KEY` 后，新评论和回复都必须先通过 Turnstile 人机验证。验证码 token 会由 Worker 调用 Siteverify 接口校验，同时检查固定动作 `comment`；可通过 `TURNSTILE_ALLOWED_HOSTNAMES` 进一步限制 token 的来源域名。只配置站点密钥不会启用验证。
+
 ### 管理员评论密钥
 
 设置管理员评论密钥后，博主在前台使用管理员邮箱发表评论时，需要先输入正确的密钥进行身份验证。验证通过的评论将直接视为已审核，通过「先审核再显示」的限制；未通过验证时，无法使用管理员邮箱发表评论，从而降低管理员邮箱被他人冒用或滥用的风险。

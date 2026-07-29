@@ -38,6 +38,10 @@ export class CommentItem extends Component {
 	}
 
 	render() {
+		this.replyEditor?.destroy();
+		this.childCommentItems.forEach((item) => item.destroy());
+		this.replyEditor = null;
+		this.childCommentItems = [];
 		const { comment, isReply, adminEmail, adminBadge } = this.props;
 		const isPinned = typeof comment.priority === 'number' && comment.priority > 1;
 		const isReplying = this.props.replyingTo === comment.id;
@@ -215,10 +219,12 @@ export class CommentItem extends Component {
 					content: this.props.replyContent,
 					error: this.props.replyError,
 					submitting: this.props.submitting,
+					turnstileSiteKey: this.props.turnstileSiteKey,
+					turnstileTheme: this.props.turnstileTheme,
 					currentUser: this.props.currentUser,
 					onUpdateUserInfo: this.props.onUpdateUserInfo,
 					onUpdate: (content) => this.handleUpdateReplyContent(content),
-					onSubmit: () => this.handleSubmitReply(),
+					onSubmit: (turnstileToken) => this.handleSubmitReply(turnstileToken),
 					onCancel: () => this.handleCancelReply(),
 					onClearError: () => this.handleClearReplyError(),
 					placeholder: this.props.replyPlaceholder,
@@ -245,6 +251,8 @@ export class CommentItem extends Component {
 						replyContent: this.props.replyContent,
 						replyError: this.props.replyError,
 						submitting: this.props.submitting,
+						turnstileSiteKey: this.props.turnstileSiteKey,
+						turnstileTheme: this.props.turnstileTheme,
 						currentUser: this.props.currentUser,
 						onUpdateUserInfo: this.props.onUpdateUserInfo,
 						// adminEmail 已移除
@@ -299,10 +307,12 @@ export class CommentItem extends Component {
 					content: this.props.replyContent,
 					error: this.props.replyError,
 					submitting: this.props.submitting,
+					turnstileSiteKey: this.props.turnstileSiteKey,
+					turnstileTheme: this.props.turnstileTheme,
 					currentUser: this.props.currentUser,
 					onUpdateUserInfo: this.props.onUpdateUserInfo,
 					onUpdate: (content) => this.handleUpdateReplyContent(content),
-					onSubmit: () => this.handleSubmitReply(),
+					onSubmit: (turnstileToken) => this.handleSubmitReply(turnstileToken),
 					onCancel: () => this.handleCancelReply(),
 					onClearError: () => this.handleClearReplyError(),
 					placeholder: this.props.replyPlaceholder,
@@ -313,6 +323,7 @@ export class CommentItem extends Component {
 				this.replyEditor.focus();
 			} else if (!isReplying && replyContainer) {
 				// 隐藏回复编辑器
+				this.replyEditor?.destroy();
 				replyContainer.innerHTML = '';
 				this.replyEditor = null;
 			}
@@ -323,6 +334,8 @@ export class CommentItem extends Component {
 				error: this.props.replyError,
 				submitting: this.props.submitting,
 				currentUser: this.props.currentUser,
+				turnstileSiteKey: this.props.turnstileSiteKey,
+				turnstileTheme: this.props.turnstileTheme,
 				placeholder: this.props.replyPlaceholder,
 				emotionGroups: this.props.emotionGroups,
 			});
@@ -337,6 +350,8 @@ export class CommentItem extends Component {
 					replyError: this.props.replyError,
 					submitting: this.props.submitting,
 					currentUser: this.props.currentUser,
+					turnstileSiteKey: this.props.turnstileSiteKey,
+					turnstileTheme: this.props.turnstileTheme,
 					enableCommentLike: this.props.enableCommentLike,
 					replyPlaceholder: this.props.replyPlaceholder,
 					emotionGroups: this.props.emotionGroups,
@@ -452,9 +467,9 @@ export class CommentItem extends Component {
 		return likedComments.has(String(commentId));
 	}
 
-	handleSubmitReply() {
+	handleSubmitReply(turnstileToken) {
 		if (this.props.onSubmitReply) {
-			this.props.onSubmitReply(this.props.comment.id);
+			return this.props.onSubmitReply(this.props.comment.id, turnstileToken);
 		}
 	}
 
@@ -474,5 +489,13 @@ export class CommentItem extends Component {
 		if (this.props.onClearReplyError) {
 			this.props.onClearReplyError();
 		}
+	}
+
+	destroy() {
+		this.replyEditor?.destroy();
+		this.childCommentItems.forEach((item) => item.destroy());
+		this.replyEditor = null;
+		this.childCommentItems = [];
+		super.destroy();
 	}
 }

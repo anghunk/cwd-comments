@@ -280,8 +280,9 @@ app.get('/api/config/comments', async (c) => {
 		const settings = await loadCommentSettings(c.env);
 		const featureSettings = await loadFeatureSettings(c.env);
 		const { adminKey, adminKeySet, blockedIps, blockedEmails, ...publicSettings } = settings as any;
+		const turnstileSiteKey = c.env.TURNSTILE_SECRET_KEY?.trim() ? c.env.TURNSTILE_SITE_KEY?.trim() || '' : '';
 
-		return c.json({ ...publicSettings, ...featureSettings });
+		return c.json({ ...publicSettings, ...featureSettings, turnstileSiteKey });
 	} catch (e: any) {
 		return c.json({ message: e.message || '加载评论配置失败' }, 500);
 	}
