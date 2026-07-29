@@ -1,7 +1,7 @@
 import { Context } from 'hono';
 import { UAParser } from 'ua-parser-js';
 import { marked } from 'marked';
-import xss from 'xss';
+import xss, { whiteList as defaultWhiteList } from 'xss';
 import { Bindings } from '../../bindings';
 import {
   sendCommentNotification,
@@ -137,7 +137,7 @@ export const postComment = async (c: Context<{ Bindings: Bindings }>) => {
   const html = await marked.parse(cleanedContent, { async: true });
   const contentHtml = xss(html, {
     whiteList: {
-      ...xss.whiteList,
+      ...defaultWhiteList,
       code: ['class'],
       span: ['class', 'style'],
       pre: ['class'],

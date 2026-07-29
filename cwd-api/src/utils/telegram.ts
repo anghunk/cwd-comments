@@ -11,6 +11,14 @@ export interface TelegramSettings {
   notifyEnabled: boolean;
 }
 
+/** Telegram Bot API response envelope. */
+export interface TelegramApiResponse<TResult = unknown> {
+  ok: boolean;
+  result?: TResult;
+  description?: string;
+  error_code?: number;
+}
+
 export async function loadTelegramSettings(env: Bindings): Promise<TelegramSettings> {
   const keys = [TG_BOT_TOKEN_KEY, TG_CHAT_ID_KEY, TG_NOTIFY_ENABLED_KEY];
   const { results } = await env.CWD_DB.prepare(
@@ -54,7 +62,7 @@ export async function sendTelegramMessage(
   chatId: string,
   text: string,
   options: any = {}
-) {
+): Promise<TelegramApiResponse> {
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
   const body = {
     chat_id: chatId,
@@ -69,17 +77,17 @@ export async function sendTelegramMessage(
     body: JSON.stringify(body),
   });
 
-  return response.json();
+  return response.json<TelegramApiResponse>();
 }
 
-export async function setTelegramWebhook(token: string, webhookUrl: string) {
+export async function setTelegramWebhook(token: string, webhookUrl: string): Promise<TelegramApiResponse> {
     const url = `https://api.telegram.org/bot${token}/setWebhook`;
     const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: webhookUrl }),
     });
-    return response.json();
+    return response.json<TelegramApiResponse>();
 }
 
 export async function deleteMessage(token: string, chatId: string | number, messageId: number) {
@@ -91,7 +99,13 @@ export async function deleteMessage(token: string, chatId: string | number, mess
     });
 }
 
-export async function editMessageText(token: string, chatId: string | number, messageId: number, text: string, options: any = {}) {
+export async function editMessageText(
+  token: string,
+  chatId: string | number,
+  messageId: number,
+  text: string,
+  options: any = {}
+): Promise<TelegramApiResponse> {
      const url = `https://api.telegram.org/bot${token}/editMessageText`;
       const body = {
         chat_id: chatId,
@@ -107,7 +121,7 @@ export async function editMessageText(token: string, chatId: string | number, me
         body: JSON.stringify(body),
       });
 
-      return response.json();
+      return response.json<TelegramApiResponse>();
 }
 
 export async function answerCallbackQuery(token: string, callbackQueryId: string, text?: string) {
