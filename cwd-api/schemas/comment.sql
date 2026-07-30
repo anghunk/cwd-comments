@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS Comment (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created INTEGER NOT NULL,
     post_slug TEXT NOT NULL,
+    post_url TEXT,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     url TEXT,
