@@ -6,6 +6,7 @@ import { Component } from './Component.js';
 import { CommentItem } from './CommentItem.js';
 import { Loading } from './Loading.js';
 import { Pagination } from './Pagination.js';
+import { canUpdateLikesInPlace, updateCommentLikesInPlace } from './commentLikeUpdates.js';
 
 export class CommentList extends Component {
   /**
@@ -158,10 +159,18 @@ export class CommentList extends Component {
       return;
     }
 
-    // 如果评论列表变化，重新渲染
+    // 点赞只更新对应评论，保留已创建的回复编辑器和 Turnstile challenge。
     if (this.props.comments !== prevProps.comments) {
-      this.render();
-      return;
+      const canUpdateInPlace =
+        canUpdateLikesInPlace(prevProps.comments, this.props.comments) &&
+        this.props.comments.every((comment) => this.commentItems.has(comment.id));
+
+      if (canUpdateInPlace) {
+        updateCommentLikesInPlace(this.commentItems, this.props.comments);
+      } else {
+        this.render();
+        return;
+      }
     }
 
     // 如果只是回复状态变化，局部更新 CommentItem 而不是完全重新渲染

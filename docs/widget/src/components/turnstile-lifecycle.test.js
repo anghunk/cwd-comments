@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { CommentForm } from './CommentForm.js';
 import { ReplyEditor } from './ReplyEditor.js';
+import { canUpdateLikesInPlace, updateCommentLikesInPlace } from './commentLikeUpdates.js';
 
 test('preview toggles update in place without rendering a new challenge', () => {
 	for (const ComponentClass of [CommentForm, ReplyEditor]) {
@@ -70,4 +71,36 @@ test('a pre-Siteverify rejection preserves the current challenge', async () => {
 
 		assert.equal(resets, 0);
 	}
+});
+
+test('like-only comment updates preserve the active reply challenge', () => {
+	const previousComments = [
+		{
+			id: 1,
+			name: 'Reader',
+			likes: 0,
+			replies: [{ id: 2, name: 'Author', likes: 0 }],
+		},
+	];
+	const nextComments = [
+		{
+			...previousComments[0],
+			replies: [{ ...previousComments[0].replies[0], likes: 1 }],
+		},
+	];
+	const activeReplyEditor = { turnstileToken: 'solved-token' };
+	const commentItem = {
+		replyEditor: activeReplyEditor,
+		updateCommentLikes(comment) {
+			this.comment = comment;
+		},
+	};
+	const commentItems = new Map([[1, commentItem]]);
+
+	assert.equal(canUpdateLikesInPlace(previousComments, nextComments), true);
+	updateCommentLikesInPlace(commentItems, nextComments);
+
+	assert.equal(commentItem.comment, nextComments[0]);
+	assert.equal(commentItem.replyEditor, activeReplyEditor);
+	assert.equal(commentItem.replyEditor.turnstileToken, 'solved-token');
 });

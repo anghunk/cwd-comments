@@ -361,6 +361,46 @@ export class CommentItem extends Component {
 		}
 	}
 
+	updateCommentLikes(comment) {
+		this.props.comment = comment;
+		const button = this.elements.root?.querySelector('.cwd-comment-like-button');
+		if (button) {
+			const liked = this.hasLiked(comment.id);
+			button.classList.toggle('cwd-comment-like-button-liked', liked);
+			button.setAttribute('aria-label', liked ? '取消点赞' : '点赞');
+
+			const icon = button.querySelector('.cwd-comment-like-icon');
+			if (icon) {
+				icon.setAttribute('fill', liked ? 'currentColor' : 'none');
+			}
+
+			const likeCount =
+				typeof comment.likes === 'number' && Number.isFinite(comment.likes) && comment.likes >= 0
+					? comment.likes
+					: 0;
+			let countElement = button.querySelector('.cwd-comment-like-count');
+			if (likeCount >= 1) {
+				if (!countElement) {
+					countElement = this.createTextElement('span', String(likeCount), 'cwd-comment-like-count');
+					button.appendChild(countElement);
+				} else {
+					countElement.textContent = String(likeCount);
+				}
+			} else {
+				countElement?.remove();
+			}
+		}
+
+		const replies = Array.isArray(comment.replies) ? comment.replies : [];
+		const repliesById = new Map(replies.map((reply) => [reply.id, reply]));
+		this.childCommentItems.forEach((childItem) => {
+			const nextReply = repliesById.get(childItem.props.comment.id);
+			if (nextReply) {
+				childItem.updateCommentLikes(nextReply);
+			}
+		});
+	}
+
 	handleReply() {
 		if (this.props.onReply) {
 			this.props.onReply(this.props.comment.id);
