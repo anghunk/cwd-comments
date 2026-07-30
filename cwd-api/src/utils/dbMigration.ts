@@ -117,7 +117,18 @@ export async function ensureSchema(env: Bindings) {
 			).run();
 		}
 
-		// 4. Create Indexes
+		// 4. Check and migrate Comment
+		const commentInfo = await env.CWD_DB.prepare('PRAGMA table_info(Comment)').all();
+		const commentColumns = (commentInfo.results || []) as any[];
+		const hasCommentPostUrl = commentColumns.some((col) => col.name === 'post_url');
+
+		if (!hasCommentPostUrl && commentColumns.length > 0) {
+			console.log('Migrating Comment table...');
+			await env.CWD_DB.prepare('ALTER TABLE Comment ADD COLUMN post_url TEXT').run();
+			console.log('Migrated Comment table successfully.');
+		}
+
+		// 5. Create Indexes
 		await env.CWD_DB.prepare('CREATE INDEX IF NOT EXISTS idx_page_stats_site_id ON page_stats(site_id)').run();
 		await env.CWD_DB.prepare('CREATE INDEX IF NOT EXISTS idx_page_visit_daily_site_id ON page_visit_daily(site_id)').run();
 		await env.CWD_DB.prepare('CREATE INDEX IF NOT EXISTS idx_likes_site_id ON Likes(site_id)').run();

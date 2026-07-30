@@ -13,6 +13,7 @@ const saveComments = async (env: Bindings, comments: any[]) => {
             id,
             created,
             post_slug,
+            post_url,
             name,
             email,
             url,
@@ -30,13 +31,14 @@ const saveComments = async (env: Bindings, comments: any[]) => {
 			} = comment;
 
             const fields = [
-                'created', 'post_slug', 'name', 'email', 'url',
+                'created', 'post_slug', 'post_url', 'name', 'email', 'url',
                 'ip_address', 'device', 'os', 'browser', 'ua',
                 'content_text', 'content_html', 'parent_id', 'status', 'likes', 'site_id'
             ];
             const values = [
                 created || Date.now(),
                 post_slug || "",
+                post_url || null,
                 name || "Anonymous",
                 email || "",
                 url || null,
