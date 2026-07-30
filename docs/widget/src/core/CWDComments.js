@@ -127,6 +127,7 @@ export class CWDComments {
 				enableCommentLike: typeof data.enableCommentLike === 'boolean' ? data.enableCommentLike : true,
 				enableArticleLike: typeof data.enableArticleLike === 'boolean' ? data.enableArticleLike : true,
 				enableImageLightbox: typeof data.enableImageLightbox === 'boolean' ? data.enableImageLightbox : false,
+				requireReview: !!data.requireReview,
 				turnstileSiteKey: typeof data.turnstileSiteKey === 'string' ? data.turnstileSiteKey : '',
 				commentPlaceholder:
 					typeof data.commentPlaceholder === 'string' ? data.commentPlaceholder : undefined,
