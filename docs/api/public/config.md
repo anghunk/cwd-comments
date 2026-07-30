@@ -35,6 +35,7 @@ GET /api/config/comments
   "enableCommentLike": true,
   "enableArticleLike": true,
   "enableImageLightbox": true,
+  "turnstileSiteKey": "0x4AAAAAAA...",
   "commentPlaceholder": "发表你的看法...",
   "adminLanguage": "zh-CN",
   "widgetLanguage": "auto"
@@ -54,6 +55,7 @@ GET /api/config/comments
 | `enableCommentLike`  | boolean           | 是否启用评论点赞功能（默认 true）                                   |
 | `enableArticleLike`  | boolean           | 是否启用文章点赞功能（默认 true）                                   |
 | `enableImageLightbox`| boolean           | 是否启用评论图片灯箱预览功能（默认 false）                          |
+| `turnstileSiteKey`   | string            | Turnstile 站点密钥；未启用服务端验证时为空字符串                    |
 | `commentPlaceholder` | string \| null    | 评论输入框的占位符文本，留空则使用默认值                            |
 | `adminLanguage`      | string \| null    | 管理后台界面语言代码，如 `zh-CN`、`en-US`，仅供后台使用            |
 | `widgetLanguage`     | string \| null    | 评论前端组件默认语言代码，支持 `auto` 自动根据浏览器语言选择       |

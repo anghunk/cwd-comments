@@ -114,6 +114,9 @@ npm install
 | ------------------ | ----------- | --------------------------------------------------------------------- |
 | `ADMIN_NAME`       | string      | 管理员登录名称                                                        |
 | `ADMIN_PASSWORD`   | string      | 管理员登录密码                                                        |
+| `TURNSTILE_SITE_KEY` | string    | Cloudflare Turnstile 站点密钥，配置后由公开配置接口下发                |
+| `TURNSTILE_SECRET_KEY` | string  | Cloudflare Turnstile 私密密钥；配置后提交评论必须通过验证码            |
+| `TURNSTILE_ALLOWED_HOSTNAMES` | string | 可选，允许的验证码域名，多个域名以逗号分隔                  |
 
 在 Cloudflare 控制台中配置方式：
 
@@ -121,6 +124,14 @@ npm install
 - 在 `Environment Variables` 中添加 `ADMIN_NAME`、`ADMIN_PASSWORD` 等变量
 - 在 `D1 Databases` 中绑定 `CWD_DB`（默认已配置好）
 - 在 `KV Namespaces` 中绑定 `CWD_AUTH_KV`（默认已配置好）
+
+Turnstile 私密密钥建议通过 Wrangler Secret 保存：
+
+```bash
+npx wrangler secret put TURNSTILE_SECRET_KEY
+```
+
+`TURNSTILE_SITE_KEY` 和可选的 `TURNSTILE_ALLOWED_HOSTNAMES` 可以作为普通 Worker 变量配置。只有同时配置私密密钥和站点密钥时，前端才会显示验证码。服务端在检测到私密密钥后会强制校验 Turnstile token、`action=comment` 和可选的允许域名，因此不要只配置私密密钥，否则前端无法取得站点密钥，评论请求会被拒绝。
 
 
 ## 参考模板
@@ -159,7 +170,9 @@ npm install
 	],
 	"vars": {
 		"ADMIN_NAME": "admin@example.com",
-		"ADMIN_PASSWORD": "123456"
+		"ADMIN_PASSWORD": "123456",
+		"TURNSTILE_SITE_KEY": "0x4AAAAAAA...",
+		"TURNSTILE_ALLOWED_HOSTNAMES": "example.com,www.example.com"
 	}
 }
 ```

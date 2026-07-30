@@ -13,6 +13,7 @@ import {
 } from '../../utils/email';
 import { loadTelegramSettings, sendTelegramMessage } from '../../utils/telegram';
 import { decodePostSlug } from '../../utils/decodePostSlug';
+import { verifyTurnstileToken } from '../../utils/turnstile';
 
 export function checkContent(content: string): string {
     return content.replace(/<script[\s\S]*?<\/script>/g, "");
@@ -23,7 +24,7 @@ export const postComment = async (c: Context<{ Bindings: Bindings }>) => {
   if (!data || typeof data !== 'object') {
     return c.json({ message: '无效的请求体' }, 400);
   }
-  const { post_slug: rawPostSlug, content: rawContent, name: rawName, email, url, post_title, post_url, adminToken } = data;
+  const { post_slug: rawPostSlug, content: rawContent, name: rawName, email, url, post_title, post_url, adminToken, turnstileToken } = data;
   const post_slug = decodePostSlug(rawPostSlug || '');
   const site_id = data.site_id ? String(data.site_id).trim() : "";
   const parentId = (data as any).parent_id ?? (data as any).parentId ?? null;
@@ -45,6 +46,28 @@ export const postComment = async (c: Context<{ Bindings: Bindings }>) => {
   const ua = c.req.header('user-agent') || "";
 
   const ip = c.req.header('cf-connecting-ip') || "127.0.0.1";
+
+  // Reject known cooldown violations before consuming a single-use Turnstile token.
+  const lastComment = await c.env.CWD_DB.prepare(
+    'SELECT created FROM Comment WHERE ip_address = ? ORDER BY created DESC LIMIT 1'
+  ).bind(ip).first<{ created: number }>();
+
+  if (lastComment && Date.now() - lastComment.created < 10 * 1000) {
+    return c.json({ message: "评论频繁，等10s后再试", turnstileConsumed: false }, 429);
+  }
+
+  const turnstileResult = await verifyTurnstileToken(c.env, turnstileToken, ip);
+  if (!turnstileResult.success) {
+    console.warn('PostComment:turnstileRejected', {
+      reason: turnstileResult.reason,
+      errorCodes: turnstileResult.errorCodes,
+      ip,
+    });
+    if (turnstileResult.reason === 'service-unavailable') {
+      return c.json({ message: '人机验证服务暂时不可用，请稍后再试' }, 503);
+    }
+    return c.json({ message: '请完成人机验证后再提交评论' }, 403);
+  }
 
   const adminEmail = await c.env.CWD_DB.prepare('SELECT value FROM Settings WHERE key = ?')
     .bind('comment_admin_email')
@@ -115,20 +138,7 @@ export const postComment = async (c: Context<{ Bindings: Bindings }>) => {
       isAdminComment = true;
     }
   }
-  // 2. 检查评论频率控制 (对应 canPostComment)
-  // 这里建议使用 D1 查最近一条评论的时间，或者直接放行（如果使用了 Cloudflare WAF）
-  const lastComment = await c.env.CWD_DB.prepare(
-    'SELECT created FROM Comment WHERE ip_address = ? ORDER BY created DESC LIMIT 1'
-  ).bind(ip).first<{ created: number }>();
-
-  if (lastComment) {
-    const lastTime = lastComment.created;
-    if (Date.now() - lastTime < 10 * 1000) {
-      return c.json({ message: "评论频繁，等10s后再试" }, 429);
-    }
-  }
-
-  // 3. 准备数据
+  // 2. 准备数据
   const cleanedContent = checkContent(rawContent);
   const contentText = cleanedContent;
   const name = checkContent(rawName);

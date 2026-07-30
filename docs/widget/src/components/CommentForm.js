@@ -5,6 +5,7 @@
 import { Component } from './Component.js';
 import { AdminAuthModal } from './AdminAuthModal.js';
 import { EmotionPicker } from './EmotionPicker.js';
+import { TurnstileWidget } from './TurnstileWidget.js';
 import { auth } from '../utils/auth.js';
 import { insertTextAtCursor } from '../utils/emotions.js';
 import { renderMarkdown } from '../utils/markdown.js';
@@ -39,13 +40,22 @@ export class CommentForm extends Component {
 		};
 		this.modal = null;
 		this.emotionPicker = null;
+		this.turnstileWidget = null;
+		this.turnstileToken = '';
 	}
 
 	render() {
+		this.turnstileWidget?.destroy();
+		this.turnstileWidget = null;
+		this.turnstileToken = '';
 		const { formErrors, submitting } = this.props;
 		const { localForm } = this.state;
 
-		const canSubmit = localForm.name.trim() && localForm.email.trim() && localForm.content.trim();
+		const canSubmit =
+			localForm.name.trim() &&
+			localForm.email.trim() &&
+			localForm.content.trim() &&
+			(!this.props.turnstileSiteKey || this.turnstileToken);
 		const isAdmin = this.props.adminEmail && localForm.email.trim() === this.props.adminEmail;
 		const isVerified = isAdmin && auth.hasToken();
 		const placeholderText = this.props.placeholder || '';
@@ -125,6 +135,10 @@ export class CommentForm extends Component {
 					],
 				}),
 
+				...(this.props.turnstileSiteKey
+					? [this.createElement('div', { className: 'cwd-turnstile-container' })]
+					: []),
+
 				// 操作按钮
 				this.createElement('div', {
 					className: 'cwd-form-actions',
@@ -175,6 +189,24 @@ export class CommentForm extends Component {
 		this.empty(this.container);
 		this.container.appendChild(root);
 		this.renderEmotionPicker(root);
+		this.renderTurnstile(root);
+	}
+
+	renderTurnstile(root) {
+		if (!this.props.turnstileSiteKey) {
+			return;
+		}
+		const container = root.querySelector('.cwd-turnstile-container');
+		this.turnstileWidget = new TurnstileWidget(container, {
+			siteKey: this.props.turnstileSiteKey,
+			theme: this.props.turnstileTheme,
+			errorText: this.t('verifyFailed'),
+			onTokenChange: (token) => {
+				this.turnstileToken = token;
+				this.updateFormState();
+			},
+		});
+		this.turnstileWidget.render();
 	}
 
 	/**
@@ -199,6 +231,13 @@ export class CommentForm extends Component {
 	}
 
 	updateProps(prevProps) {
+		if (
+			this.props.turnstileSiteKey !== prevProps.turnstileSiteKey ||
+			this.props.turnstileTheme !== prevProps.turnstileTheme
+		) {
+			this.render();
+			return;
+		}
 		// 只在非提交状态时同步表单数据（避免覆盖用户正在输入的内容）
 		if (!this.props.submitting && this.props.form !== prevProps.form) {
 			// 保留当前正在输入的内容
@@ -233,7 +272,11 @@ export class CommentForm extends Component {
 		const { formErrors, submitting } = this.props;
 		const { localForm } = this.state;
 
-		const canSubmit = localForm.name.trim() && localForm.email.trim() && localForm.content.trim();
+		const canSubmit =
+			localForm.name.trim() &&
+			localForm.email.trim() &&
+			localForm.content.trim() &&
+			(!this.props.turnstileSiteKey || this.turnstileToken);
 
 		// 更新提交按钮状态
 		const submitBtn = this.elements.root.querySelector('button[type="submit"]');
@@ -258,6 +301,7 @@ export class CommentForm extends Component {
 			} else {
 				previewBtn.textContent = this.state.showPreview ? this.t('close') : this.t('preview');
 			}
+			previewBtn.classList.toggle('cwd-btn-active', this.state.showPreview);
 		}
 
 		// 更新输入框禁用状态
@@ -361,7 +405,42 @@ export class CommentForm extends Component {
 
 	togglePreview() {
 		this.state.showPreview = !this.state.showPreview;
-		this.render();
+		this.updatePreviewState();
+	}
+
+	updatePreviewState() {
+		const root = this.elements.root;
+		if (!root) {
+			return;
+		}
+
+		const previewBtn = root.querySelector('.cwd-btn-preview');
+		if (previewBtn) {
+			previewBtn.textContent = this.state.showPreview ? this.t('close') : this.t('preview');
+			previewBtn.classList.toggle('cwd-btn-active', this.state.showPreview);
+		}
+
+		let previewContainer = root.querySelector('.cwd-preview-container');
+		if (!this.state.showPreview || !this.state.localForm.content) {
+			previewContainer?.remove();
+			return;
+		}
+
+		if (!previewContainer) {
+			previewContainer = this.createElement('div', {
+				className: 'cwd-preview-container',
+				children: [
+					this.createElement('div', {
+						className: 'cwd-preview-content cwd-comment-content',
+						html: renderMarkdown(this.state.localForm.content),
+					}),
+				],
+			});
+			const actions = root.querySelector('.cwd-form-actions');
+			root.insertBefore(previewContainer, actions?.nextSibling || null);
+		} else {
+			this.updatePreviewContent(this.state.localForm.content);
+		}
 	}
 
 	handleFieldChange(field, value) {
@@ -414,7 +493,7 @@ export class CommentForm extends Component {
 		}
 	}
 
-	handleSubmit(e) {
+	async handleSubmit(e) {
 		e.preventDefault();
 		const email = this.state.localForm.email?.trim();
 		const adminEmail = this.props.adminEmail;
@@ -423,7 +502,14 @@ export class CommentForm extends Component {
 			return;
 		}
 		if (this.props.onSubmit) {
-			this.props.onSubmit(this.state.localForm);
+			try {
+				const result = await this.props.onSubmit(this.state.localForm, this.turnstileToken);
+				if (result?.resetTurnstile !== false) {
+					this.turnstileWidget?.reset();
+				}
+			} catch {
+				this.turnstileWidget?.reset();
+			}
 		}
 	}
 
@@ -465,5 +551,11 @@ export class CommentForm extends Component {
 			t: this.t
 		});
 		this.modal.render();
+	}
+
+	destroy() {
+		this.turnstileWidget?.destroy();
+		this.turnstileWidget = null;
+		super.destroy();
 	}
 }

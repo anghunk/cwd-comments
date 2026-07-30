@@ -4,6 +4,7 @@
 
 import { Component } from './Component.js';
 import { EmotionPicker } from './EmotionPicker.js';
+import { TurnstileWidget } from './TurnstileWidget.js';
 import { insertTextAtCursor } from '../utils/emotions.js';
 import { renderMarkdown } from '../utils/markdown.js';
 
@@ -32,9 +33,14 @@ export class ReplyEditor extends Component {
 			showPreview: false,
 		};
 		this.emotionPicker = null;
+		this.turnstileWidget = null;
+		this.turnstileToken = '';
 	}
 
 	render() {
+		this.turnstileWidget?.destroy();
+		this.turnstileWidget = null;
+		this.turnstileToken = '';
 		const { currentUser } = this.props;
 		const { showUserInfo } = this.state;
 		const placeholderText = this.props.placeholder || '';
@@ -110,6 +116,10 @@ export class ReplyEditor extends Component {
 						]
 					: []),
 
+				...(this.props.turnstileSiteKey
+					? [this.createElement('div', { className: 'cwd-turnstile-container cwd-reply-turnstile-container' })]
+					: []),
+
 				// 操作按钮
 				this.createElement('div', {
 					className: 'cwd-reply-actions',
@@ -127,13 +137,16 @@ export class ReplyEditor extends Component {
 							className: 'cwd-btn cwd-btn-primary cwd-btn-small',
 							attributes: {
 								type: 'button',
-								disabled: this.props.submitting || !this.state.content.trim(),
+								disabled:
+									this.props.submitting ||
+									!this.state.content.trim() ||
+									(!!this.props.turnstileSiteKey && !this.turnstileToken),
 								onClick: () => this.handleSubmit(),
 							},
 							text: this.props.submitting ? this.t('submitting') : this.t('submit'),
 						}),
 						this.createElement('button', {
-							className: 'cwd-btn cwd-btn-secondary cwd-btn-small',
+							className: 'cwd-btn cwd-btn-secondary cwd-btn-small cwd-btn-cancel',
 							attributes: {
 								type: 'button',
 								disabled: this.props.submitting,
@@ -172,6 +185,24 @@ export class ReplyEditor extends Component {
 		this.empty(this.container);
 		this.container.appendChild(root);
 		this.renderEmotionPicker(root);
+		this.renderTurnstile(root);
+	}
+
+	renderTurnstile(root) {
+		if (!this.props.turnstileSiteKey) {
+			return;
+		}
+		const container = root.querySelector('.cwd-turnstile-container');
+		this.turnstileWidget = new TurnstileWidget(container, {
+			siteKey: this.props.turnstileSiteKey,
+			theme: this.props.turnstileTheme,
+			errorText: this.t('verifyFailed'),
+			onTokenChange: (token) => {
+				this.turnstileToken = token;
+				this.updateActionState();
+			},
+		});
+		this.turnstileWidget.render();
 	}
 
 	/**
@@ -196,30 +227,30 @@ export class ReplyEditor extends Component {
 	}
 
 	updateProps(prevProps) {
+		if (
+			this.props.turnstileSiteKey !== prevProps?.turnstileSiteKey ||
+			this.props.turnstileTheme !== prevProps?.turnstileTheme
+		) {
+			this.render();
+			return;
+		}
 		// 如果外部传入的 content 变化，更新内部状态
 		if (this.props.content !== this.state.content && this.props.content !== prevProps?.content) {
 			this.state.content = this.props.content;
-			this.render();
-			return;
+			const textarea = this.elements.root?.querySelector('.cwd-reply-textarea');
+			if (textarea) {
+				textarea.value = this.state.content;
+			}
+			if (!this.state.content.trim()) {
+				this.state.showPreview = false;
+			}
+			this.updatePreviewState();
 		}
 
-		// 如果用户信息变化，重新渲染
-		if (JSON.stringify(this.props.currentUser) !== JSON.stringify(prevProps?.currentUser)) {
-			this.render();
-			return;
-		}
-
-		// 如果有错误显示/隐藏变化，重新渲染
-		if (this.props.error !== prevProps?.error) {
-			this.render();
-			return;
-		}
-
-		// 如果 submitting 状态变化，重新渲染
-		if (this.props.submitting !== prevProps?.submitting) {
-			this.render();
-			return;
-		}
+		this.updateUserInfoFields();
+		this.updateErrorState();
+		this.updateSubmittingState();
+		this.updateActionState();
 	}
 
 	handleTextareaKeydown(e) {
@@ -230,7 +261,7 @@ export class ReplyEditor extends Component {
 
 	togglePreview() {
 		this.state.showPreview = !this.state.showPreview;
-		this.render();
+		this.updatePreviewState();
 	}
 
 	handleInput(e) {
@@ -239,7 +270,10 @@ export class ReplyEditor extends Component {
 		// 更新提交按钮的禁用状态
 		const submitBtn = this.elements.root?.querySelector('.cwd-btn-primary');
 		if (submitBtn) {
-			submitBtn.disabled = this.props.submitting || !this.state.content.trim();
+			submitBtn.disabled =
+				this.props.submitting ||
+				!this.state.content.trim() ||
+				(!!this.props.turnstileSiteKey && !this.turnstileToken);
 		}
 
 		// 更新预览按钮的禁用状态
@@ -286,12 +320,114 @@ export class ReplyEditor extends Component {
 	updateActionState() {
 		const submitBtn = this.elements.root?.querySelector('.cwd-btn-primary');
 		if (submitBtn) {
-			submitBtn.disabled = this.props.submitting || !this.state.content.trim();
+			submitBtn.disabled =
+				this.props.submitting ||
+				!this.state.content.trim() ||
+				(!!this.props.turnstileSiteKey && !this.turnstileToken);
 		}
 
 		const previewBtn = this.elements.root?.querySelector('.cwd-btn-preview');
 		if (previewBtn) {
 			previewBtn.disabled = this.props.submitting || !this.state.content.trim();
+			previewBtn.textContent = this.state.showPreview ? this.t('close') : this.t('preview');
+			previewBtn.classList.toggle('cwd-btn-active', this.state.showPreview);
+		}
+	}
+
+	updatePreviewState() {
+		const root = this.elements.root;
+		if (!root) {
+			return;
+		}
+
+		this.updateActionState();
+		let previewContainer = root.querySelector('.cwd-preview-container');
+		if (!this.state.showPreview || !this.state.content) {
+			previewContainer?.remove();
+			return;
+		}
+
+		if (!previewContainer) {
+			previewContainer = this.createElement('div', {
+				className: 'cwd-preview-container',
+				children: [
+					this.createElement('div', {
+						className: 'cwd-preview-content cwd-comment-content',
+						html: renderMarkdown(this.state.content),
+					}),
+				],
+			});
+			const actions = root.querySelector('.cwd-reply-actions');
+			root.insertBefore(previewContainer, actions?.nextSibling || null);
+		} else {
+			this.updatePreviewContent(this.state.content);
+		}
+	}
+
+	updateUserInfoFields() {
+		const currentUser = this.props.currentUser || {};
+		for (const field of ['name', 'email', 'url']) {
+			const input = this.elements.root?.querySelector(`[data-cwd-user-field="${field}"]`);
+			if (input && (typeof document === 'undefined' || input !== document.activeElement)) {
+				input.value = currentUser[field] || '';
+			}
+		}
+	}
+
+	updateErrorState() {
+		const root = this.elements.root;
+		if (!root) {
+			return;
+		}
+
+		let errorElement = root.querySelector('.cwd-error-inline');
+		if (!this.props.error) {
+			errorElement?.remove();
+			return;
+		}
+
+		if (!errorElement) {
+			errorElement = this.createElement('div', {
+				className: 'cwd-error-inline cwd-error-small',
+				children: [
+					this.createTextElement('span', this.props.error),
+					this.createElement('button', {
+						className: 'cwd-error-close',
+						attributes: {
+							type: 'button',
+							onClick: () => this.handleClearError(),
+						},
+						text: '✕',
+					}),
+				],
+			});
+			const nextElement = root.querySelector('.cwd-turnstile-container') || root.querySelector('.cwd-reply-actions');
+			root.insertBefore(errorElement, nextElement);
+			return;
+		}
+
+		const message = errorElement.querySelector('span');
+		if (message) {
+			message.textContent = this.props.error;
+		}
+	}
+
+	updateSubmittingState() {
+		const root = this.elements.root;
+		if (!root) {
+			return;
+		}
+
+		root.querySelectorAll('input, textarea').forEach((field) => {
+			field.disabled = !!this.props.submitting;
+		});
+		const submitBtn = root.querySelector('.cwd-btn-primary');
+		if (submitBtn) {
+			submitBtn.textContent = this.props.submitting ? this.t('submitting') : this.t('submit');
+		}
+		const cancelBtn = root.querySelector('.cwd-btn-cancel');
+		if (cancelBtn) {
+			cancelBtn.disabled = !!this.props.submitting;
 		}
 	}
 
@@ -302,9 +438,16 @@ export class ReplyEditor extends Component {
 		}
 	}
 
-	handleSubmit() {
+	async handleSubmit() {
 		if (this.props.onSubmit) {
-			this.props.onSubmit();
+			try {
+				const result = await this.props.onSubmit(this.turnstileToken);
+				if (result?.resetTurnstile !== false) {
+					this.turnstileWidget?.reset();
+				}
+			} catch {
+				this.turnstileWidget?.reset();
+			}
 		}
 	}
 
@@ -367,11 +510,18 @@ export class ReplyEditor extends Component {
 						placeholder,
 						value: value || '',
 						disabled: this.props.submitting,
+						dataset: { cwdUserField: field },
 						onInput: (e) => this.handleUserInfoChange(field, e.target.value),
 						onKeydown: (e) => this.handleTextareaKeydown(e),
 					},
 				}),
 			],
 		});
+	}
+
+	destroy() {
+		this.turnstileWidget?.destroy();
+		this.turnstileWidget = null;
+		super.destroy();
 	}
 }

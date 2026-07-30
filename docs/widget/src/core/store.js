@@ -259,7 +259,7 @@ export function createCommentStore(config, fetchComments, submitComment, likeCom
 	/**
 	 * 提交评论
 	 */
-	async function submitNewComment() {
+	async function submitNewComment(turnstileToken = '') {
 		const state = store.getState();
 		const form = state.form;
 
@@ -270,7 +270,7 @@ export function createCommentStore(config, fetchComments, submitComment, likeCom
 			store.setState({
 				formErrors: validation.errors,
 			});
-			return false;
+			return { success: false, resetTurnstile: false };
 		}
 
 		// 清空错误
@@ -287,7 +287,8 @@ export function createCommentStore(config, fetchComments, submitComment, likeCom
 				email: form.email,
 				url: form.url,
 				content: form.content,
-				adminToken: auth.getToken() // Add token if exists
+				adminToken: auth.getToken(), // Add token if exists
+				turnstileToken,
 			});
 
 			const successMessage =
@@ -305,14 +306,17 @@ export function createCommentStore(config, fetchComments, submitComment, likeCom
 
 			// 重新加载评论
 			await loadComments(state.pagination.page);
-			return true;
+			return { success: true, resetTurnstile: true };
 		} catch (e) {
 			store.setState({
 				error: e instanceof Error ? e.message : '提交评论失败',
 				submitting: false,
 				successMessage: '',
 			});
-			return false;
+			return {
+				success: false,
+				resetTurnstile: !e || e.turnstileConsumed !== false,
+			};
 		}
 	}
 
@@ -320,12 +324,12 @@ export function createCommentStore(config, fetchComments, submitComment, likeCom
 	 * 提交回复
 	 * @param {number} parentId - 父评论 ID
 	 */
-	async function submitReply(parentId) {
+	async function submitReply(parentId, turnstileToken = '') {
 		const state = store.getState();
 
 		// 验证回复内容
 		if (!state.replyContent.trim()) {
-			return false;
+			return { success: false, resetTurnstile: false };
 		}
 
 		// 验证用户信息
@@ -336,7 +340,7 @@ export function createCommentStore(config, fetchComments, submitComment, likeCom
 			store.setState({
 				replyError: errorMessages,
 			});
-			return false;
+			return { success: false, resetTurnstile: false };
 		}
 
 		store.setState({
@@ -352,7 +356,8 @@ export function createCommentStore(config, fetchComments, submitComment, likeCom
 				url: state.form.url,
 				content: state.replyContent,
 				parentId,
-				adminToken: auth.getToken()
+				adminToken: auth.getToken(),
+				turnstileToken,
 			});
 
 			// 清空回复内容并关闭回复框
@@ -364,13 +369,16 @@ export function createCommentStore(config, fetchComments, submitComment, likeCom
 
 			// 重新加载评论
 			await loadComments(state.pagination.page);
-			return true;
+			return { success: true, resetTurnstile: true };
 		} catch (e) {
 			store.setState({
 				error: e instanceof Error ? e.message : '提交回复失败',
 				submitting: false,
 			});
-			return false;
+			return {
+				success: false,
+				resetTurnstile: !e || e.turnstileConsumed !== false,
+			};
 		}
 	}
 

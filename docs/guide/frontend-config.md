@@ -64,6 +64,9 @@ https://cwd.js.org/cwd.js
 | `theme`        | `'light' \| 'dark'`     | 否   | `'light'`                  | 主题模式                                 |
 | `pageSize`     | `number`                | 否   | `20`                       | 每页显示评论数                           |
 | `customCssUrl` | `string`                | 否   | -                          | 自定义样式表 URL，追加到 Shadow DOM 底部 |
+| `turnstileSiteKey` | `string`             | 否   | 后端配置                   | Cloudflare Turnstile 站点密钥，通常无需手动传入 |
+
+配置后端 `TURNSTILE_SITE_KEY` 和 `TURNSTILE_SECRET_KEY` 后，组件会从 `/api/config/comments` 自动读取站点密钥，并在新评论和回复提交前要求完成人机验证。
 
 ### 多语言配置说明
 

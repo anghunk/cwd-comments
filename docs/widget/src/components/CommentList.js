@@ -6,6 +6,7 @@ import { Component } from './Component.js';
 import { CommentItem } from './CommentItem.js';
 import { Loading } from './Loading.js';
 import { Pagination } from './Pagination.js';
+import { canUpdateLikesInPlace, updateCommentLikesInPlace } from './commentLikeUpdates.js';
 
 export class CommentList extends Component {
   /**
@@ -44,6 +45,8 @@ export class CommentList extends Component {
 
   render() {
     const { comments, loading, error, currentPage, totalPages } = this.props;
+    this.commentItems.forEach((commentItem) => commentItem.destroy());
+    this.commentItems.clear();
     // 清空容器
     this.empty(this.container);
 
@@ -87,9 +90,6 @@ export class CommentList extends Component {
         className: 'cwd-comments'
       });
 
-      // 清空旧的缓存
-      this.commentItems.clear();
-
       comments.forEach((comment, index) => {
         const commentItem = new CommentItem(commentsContainer, {
           comment,
@@ -104,8 +104,10 @@ export class CommentList extends Component {
           enableCommentLike: this.props.enableCommentLike,
           replyPlaceholder: this.props.replyPlaceholder,
           emotionGroups: this.props.emotionGroups,
+          turnstileSiteKey: this.props.turnstileSiteKey,
+          turnstileTheme: this.props.turnstileTheme,
           onReply: (commentId) => this.handleReply(commentId),
-          onSubmitReply: (commentId) => this.handleSubmitReply(commentId),
+          onSubmitReply: (commentId, turnstileToken) => this.handleSubmitReply(commentId, turnstileToken),
           onCancelReply: () => this.handleCancelReply(),
           onUpdateReplyContent: (content) => this.handleUpdateReplyContent(content),
           onClearReplyError: () => this.handleClearReplyError(),
@@ -157,17 +159,27 @@ export class CommentList extends Component {
       return;
     }
 
-    // 如果评论列表变化，重新渲染
+    // 点赞只更新对应评论，保留已创建的回复编辑器和 Turnstile challenge。
     if (this.props.comments !== prevProps.comments) {
-      this.render();
-      return;
+      const canUpdateInPlace =
+        canUpdateLikesInPlace(prevProps.comments, this.props.comments) &&
+        this.props.comments.every((comment) => this.commentItems.has(comment.id));
+
+      if (canUpdateInPlace) {
+        updateCommentLikesInPlace(this.commentItems, this.props.comments);
+      } else {
+        this.render();
+        return;
+      }
     }
 
     // 如果只是回复状态变化，局部更新 CommentItem 而不是完全重新渲染
     if (this.props.replyingTo !== prevProps.replyingTo ||
         this.props.replyError !== prevProps.replyError ||
         this.props.submitting !== prevProps.submitting ||
-        this.props.currentUser !== prevProps.currentUser) {
+        this.props.currentUser !== prevProps.currentUser ||
+        this.props.turnstileSiteKey !== prevProps.turnstileSiteKey ||
+        this.props.turnstileTheme !== prevProps.turnstileTheme) {
       // 局部更新所有 CommentItem
       this.commentItems.forEach((commentItem) => {
         commentItem.setProps({
@@ -178,6 +190,8 @@ export class CommentList extends Component {
           currentUser: this.props.currentUser,
           enableCommentLike: this.props.enableCommentLike,
           emotionGroups: this.props.emotionGroups,
+          turnstileSiteKey: this.props.turnstileSiteKey,
+          turnstileTheme: this.props.turnstileTheme,
           onLikeComment: (commentId, isLike) => this.handleLikeComment(commentId, isLike)
         });
       });
@@ -210,9 +224,9 @@ export class CommentList extends Component {
     }
   }
 
-  handleSubmitReply(commentId) {
+  handleSubmitReply(commentId, turnstileToken) {
     if (this.props.onSubmitReply) {
-      this.props.onSubmitReply(commentId);
+      return this.props.onSubmitReply(commentId, turnstileToken);
     }
   }
 
@@ -238,6 +252,12 @@ export class CommentList extends Component {
     if (this.props.onLikeComment) {
       this.props.onLikeComment(commentId, isLike);
     }
+  }
+
+  destroy() {
+    this.commentItems.forEach((commentItem) => commentItem.destroy());
+    this.commentItems.clear();
+    super.destroy();
   }
 
   handlePrevPage() {

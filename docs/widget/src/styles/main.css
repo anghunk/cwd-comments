@@ -360,6 +360,25 @@
   gap: 10px;
 }
 
+.cwd-turnstile-container {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  min-height: 65px;
+  margin-top: 16px;
+}
+
+.cwd-reply-turnstile-container {
+  margin-top: 12px;
+}
+
+.cwd-turnstile-error {
+  align-items: center;
+  min-height: 40px;
+  color: var(--cwd-error, #cf222e);
+  font-size: 12px;
+}
+
 .cwd-btn {
   padding: 8px 16px;
   font-size: 14px;

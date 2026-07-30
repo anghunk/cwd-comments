@@ -23,6 +23,7 @@ export class CWDComments {
 	 * @param {'light'|'dark'} [config.theme] - 主题（可选）
 	 * @param {number} [config.pageSize] - 每页评论数（可选，默认 20）
 	 * @param {string|Object} [config.emotionJson] - 前端表情 JSON 文件链接，留空则不显示表情按钮
+	 * @param {string} [config.turnstileSiteKey] - Cloudflare Turnstile site key（通常由后端自动下发）
 	 *
 	 * 以下字段由组件自动推导或从后端读取，无需通过 config 传入：
 	 * - postSlug：window.location.origin + window.location.pathname
@@ -126,6 +127,8 @@ export class CWDComments {
 				enableCommentLike: typeof data.enableCommentLike === 'boolean' ? data.enableCommentLike : true,
 				enableArticleLike: typeof data.enableArticleLike === 'boolean' ? data.enableArticleLike : true,
 				enableImageLightbox: typeof data.enableImageLightbox === 'boolean' ? data.enableImageLightbox : false,
+				requireReview: !!data.requireReview,
+				turnstileSiteKey: typeof data.turnstileSiteKey === 'string' ? data.turnstileSiteKey : '',
 				commentPlaceholder:
 					typeof data.commentPlaceholder === 'string' ? data.commentPlaceholder : undefined,
 				widgetLanguage: typeof data.widgetLanguage === 'string' ? data.widgetLanguage : undefined,
@@ -223,6 +226,7 @@ export class CWDComments {
 				this.config.adminBadge = serverConfig.adminBadge;
 			}
 			this.config.requireReview = !!serverConfig.requireReview;
+			this.config.turnstileSiteKey = serverConfig.turnstileSiteKey || this.config.turnstileSiteKey || '';
 			this.config.enableCommentLike = serverConfig.enableCommentLike;
 			this.config.enableArticleLike = serverConfig.enableArticleLike;
 			this.config.enableImageLightbox = serverConfig.enableImageLightbox;
@@ -423,12 +427,14 @@ export class CWDComments {
 				form: state.form,
 				formErrors: state.formErrors,
 				submitting: state.submitting,
-				onSubmit: () => this._handleSubmit(),
+				onSubmit: (_form, turnstileToken) => this._handleSubmit(turnstileToken),
 				onFieldChange: (field, value) => this.store.updateFormField(field, value),
 				adminEmail: this.config.adminEmail,
 				onVerifyAdmin: (key) => this.api.verifyAdminKey(key),
 				placeholder: this.config.commentPlaceholder,
 				emotionGroups: this.emotionGroups,
+				turnstileSiteKey: this.config.turnstileSiteKey,
+				turnstileTheme: this.config.theme,
 				t: this.t
 			});
 			this.commentForm.render();
@@ -473,9 +479,11 @@ export class CWDComments {
 				// adminEmail 已移除，前端展示改用 isAdmin 字段
 				adminBadge: this.config.adminBadge,
 				enableCommentLike: this.config.enableCommentLike !== false,
+				turnstileSiteKey: this.config.turnstileSiteKey,
+				turnstileTheme: this.config.theme,
 				onRetry: () => this.store.loadComments(),
 				onReply: (commentId) => this.store.startReply(commentId),
-				onSubmitReply: (commentId) => this.store.submitReply(commentId),
+				onSubmitReply: (commentId, turnstileToken) => this.store.submitReply(commentId, turnstileToken),
 				onCancelReply: () => this.store.cancelReply(),
 				onUpdateReplyContent: (content) => this.store.updateReplyContent(content),
 				onClearReplyError: () => this.store.clearReplyError(),
@@ -528,6 +536,8 @@ export class CWDComments {
 				submitting: state.submitting,
 				adminEmail: this.config.adminEmail,
 				emotionGroups: this.emotionGroups,
+				turnstileSiteKey: this.config.turnstileSiteKey,
+				turnstileTheme: this.config.theme,
 			});
 		}
 
@@ -608,6 +618,8 @@ export class CWDComments {
 				submitting: state.submitting,
 				currentUser: state.form,
 				emotionGroups: this.emotionGroups,
+				turnstileSiteKey: this.config.turnstileSiteKey,
+				turnstileTheme: this.config.theme,
 			});
 		}
 
@@ -627,9 +639,9 @@ export class CWDComments {
 	 * 处理评论提交
 	 * @private
 	 */
-	async _handleSubmit() {
-		const success = await this.store.submitNewComment();
-		if (success) {
+	async _handleSubmit(turnstileToken) {
+		const result = await this.store.submitNewComment(turnstileToken);
+		if (result.success) {
 			// 表单内容已在 store 中清空
 			// 更新表单组件
 			if (this.commentForm) {
@@ -638,6 +650,7 @@ export class CWDComments {
 				this.commentForm.render();
 			}
 		}
+		return result;
 	}
 
 	/**
@@ -664,6 +677,8 @@ export class CWDComments {
 		// 更新主题
 		if (newConfig.theme && this.mountPoint) {
 			this.mountPoint.setAttribute('data-theme', newConfig.theme);
+			this.commentForm?.setProps({ turnstileTheme: newConfig.theme });
+			this.commentList?.setProps({ turnstileTheme: newConfig.theme });
 		}
 
 		const shouldReload =
